@@ -15,8 +15,8 @@ export interface RequestOptions<T> {
   query?: Record<string, string | number>
   body?: unknown
   schema: z.ZodType<T>
-  timeoutMs?: number
-  signal?: AbortSignal
+  timeoutMs?: number | undefined
+  signal?: AbortSignal | undefined
 }
 
 export function buildUrl(
