@@ -64,6 +64,20 @@ describe('applyNotification: incoming text', () => {
     expect(cached(context)).toBeUndefined()
   })
 
+  it('reloads the history when the message arrives while it is loading', () => {
+    const context = createContext()
+    const queryKey = messagesQueryKey(ID, contactChat.chatId)
+    void context.queryClient.fetchQuery({
+      queryKey,
+      queryFn: () => new Promise<Message[]>(() => {}),
+    })
+    const invalidate = vi.spyOn(context.queryClient, 'invalidateQueries')
+
+    applyNotification(incoming(), context)
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey })
+  })
+
   it('updates the preview, moves the chat to the top and counts it as unread', () => {
     applyNotification(incoming(), createContext())
 

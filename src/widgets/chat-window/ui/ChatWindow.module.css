@@ -43,3 +43,15 @@
   font-size: 13px;
   color: var(--color-text-secondary);
 }
+
+.banner {
+  align-self: center;
+  max-width: 560px;
+  margin: 0 16px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  text-align: center;
+  color: #ffffff;
+  background: rgb(230 70 70 / 85%);
+}

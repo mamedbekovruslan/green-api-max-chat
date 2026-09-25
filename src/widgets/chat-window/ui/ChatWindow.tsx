@@ -1,5 +1,6 @@
 import { useChatStore, type Chat } from '@/entities/chat'
 import { useChatMessages } from '@/features/chat-history'
+import { useConnectionStore } from '@/features/receive-messages'
 import { MessageInput, useSendMessage } from '@/features/send-message'
 import { formatPhone } from '@/shared/lib/phone'
 import { Avatar } from '@/shared/ui'
@@ -9,6 +10,7 @@ import { MessageList } from './MessageList'
 function ActiveChat({ chat }: { chat: Chat }) {
   const history = useChatMessages(chat.chatId)
   const { send, retry } = useSendMessage(chat.chatId)
+  const quotaExceeded = useConnectionStore((state) => state.quotaExceeded)
 
   return (
     <section className={styles.window} aria-label={`Чат с ${chat.name}`}>
@@ -20,6 +22,12 @@ function ActiveChat({ chat }: { chat: Chat }) {
         </div>
       </header>
       <MessageList chatId={chat.chatId} onRetry={retry} />
+      {quotaExceeded && (
+        <p className={styles.banner} role="status">
+          Превышен лимит тарифа GREEN-API: на бесплатном тарифе доступно 3 чата в месяц. Сообщения в
+          новые чаты не будут доставлены
+        </p>
+      )}
       <MessageInput onSend={send} disabled={!history.isSuccess} />
     </section>
   )

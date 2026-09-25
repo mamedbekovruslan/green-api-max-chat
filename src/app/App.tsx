@@ -5,9 +5,11 @@ import { ChatPage } from '@/pages/chat'
 import { LoginPage } from '@/pages/login'
 import { createQueryClient } from './queryClient'
 import { useChatsPersistence } from './useChatsPersistence'
+import { useNotificationPolling } from './useNotificationPolling'
 
 function Router() {
   useChatsPersistence()
+  useNotificationPolling()
   const isAuthenticated = useSessionStore((state) => state.session !== null)
   return isAuthenticated ? <ChatPage /> : <LoginPage />
 }

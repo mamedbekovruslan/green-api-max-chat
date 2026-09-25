@@ -61,8 +61,11 @@ function applyIncomingText(notification: IncomingText, context: NotificationCont
     failureReason: null,
   }
   const queryKey = messagesQueryKey(idInstance, chatId)
-  if (queryClient.getQueryData(queryKey)) {
+  const historyState = queryClient.getQueryState<Message[]>(queryKey)
+  if (historyState?.data) {
     queryClient.setQueryData<Message[]>(queryKey, (messages) => upsertMessage(messages, message))
+  } else if (historyState?.fetchStatus === 'fetching') {
+    void queryClient.invalidateQueries({ queryKey })
   }
 
   chats.setPreview(chatId, { text: notification.text, timestamp })

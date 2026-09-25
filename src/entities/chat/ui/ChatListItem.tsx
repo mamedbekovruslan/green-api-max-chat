@@ -7,11 +7,19 @@ interface ChatListItemProps {
   chat: Chat
   subtitle: string
   time?: string | undefined
+  unread?: number
   active: boolean
   onSelect: (chatId: string) => void
 }
 
-export function ChatListItem({ chat, subtitle, time, active, onSelect }: ChatListItemProps) {
+export function ChatListItem({
+  chat,
+  subtitle,
+  time,
+  unread = 0,
+  active,
+  onSelect,
+}: ChatListItemProps) {
   return (
     <button
       type="button"
@@ -25,7 +33,14 @@ export function ChatListItem({ chat, subtitle, time, active, onSelect }: ChatLis
           <span className={styles.name}>{chat.name}</span>
           {time && <span className={styles.time}>{time}</span>}
         </span>
-        <span className={styles.subtitle}>{subtitle}</span>
+        <span className={styles.bottom}>
+          <span className={styles.subtitle}>{subtitle}</span>
+          {unread > 0 && (
+            <span className={styles.badge} aria-label={`Непрочитанных: ${unread}`}>
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </span>
       </span>
     </button>
   )

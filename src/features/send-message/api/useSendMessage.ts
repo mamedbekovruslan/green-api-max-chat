@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
+import { useChatStore } from '@/entities/chat'
 import { messagesQueryKey, patchMessage, upsertMessage, type Message } from '@/entities/message'
 import { useGreenApiClient, useSessionStore } from '@/entities/session'
 import { getErrorMessage } from '@/shared/lib/errors'
@@ -33,6 +34,7 @@ export function useSendMessage(chatId: string) {
           failureReason: null,
         }),
       )
+      useChatStore.getState().bumpChat(chatId)
     },
     onSuccess: (idMessage, { localId }) => {
       queryClient.setQueryData<Message[]>(queryKey, (messages) =>
