@@ -1,0 +1,66 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-input);
+  background: var(--color-bg-input);
+  transition: border-color 0.15s ease;
+}
+
+.control:focus-within {
+  border-color: var(--color-accent);
+}
+
+.invalid {
+  border-color: var(--color-danger);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: none;
+  background: transparent;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.reveal {
+  margin-right: 6px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-accent);
+  background: transparent;
+  cursor: pointer;
+}
+
+.reveal:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.message {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.errorMessage {
+  color: var(--color-danger);
+}

@@ -46,10 +46,3 @@ textarea {
   font: inherit;
   color: inherit;
 }
-
-.app-placeholder {
-  display: grid;
-  place-content: center;
-  height: 100%;
-  text-align: center;
-}
