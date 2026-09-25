@@ -44,4 +44,35 @@ describe('useChatStore', () => {
 
     expect(useChatStore.getState()).toMatchObject({ chats: [], activeChatId: null })
   })
+
+  it('moves a chat to the top', () => {
+    useChatStore.getState().setChats([contactChat, otherChat])
+
+    useChatStore.getState().bumpChat(otherChat.chatId)
+
+    expect(useChatStore.getState().chats.map((chat) => chat.chatId)).toEqual([
+      otherChat.chatId,
+      contactChat.chatId,
+    ])
+  })
+
+  it('counts unread messages and clears them when the chat is opened', () => {
+    useChatStore.getState().setChats([contactChat])
+    useChatStore.getState().incrementUnread(contactChat.chatId)
+    useChatStore.getState().incrementUnread(contactChat.chatId)
+    expect(useChatStore.getState().unread[contactChat.chatId]).toBe(2)
+
+    useChatStore.getState().openChat(contactChat.chatId)
+
+    expect(useChatStore.getState().unread[contactChat.chatId]).toBeUndefined()
+  })
+
+  it('stores a preview per chat', () => {
+    useChatStore.getState().setPreview(contactChat.chatId, { text: 'Привет', timestamp: 1 })
+
+    expect(useChatStore.getState().previews[contactChat.chatId]).toEqual({
+      text: 'Привет',
+      timestamp: 1,
+    })
+  })
 })
