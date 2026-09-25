@@ -27,10 +27,11 @@ describe('App', () => {
       .login({ credentials: testCredentials, wid: '79990000001@c.us' }, { remember: true })
     render(<App />)
 
-    expect(screen.getByText('Аккаунт MAX: +7 999 000-00-01')).toBeInTheDocument()
-    expect(useChatStore.getState().chats).toEqual([contactChat])
+    expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Имя в контактах/ })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
+    await user.click(screen.getByRole('button', { name: 'Да' }))
 
     expect(screen.getByRole('heading', { name: 'Вход в MAX Chat' })).toBeInTheDocument()
     expect(useChatStore.getState().chats).toEqual([])
