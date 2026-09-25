@@ -1,0 +1,55 @@
+/* Дизайн-токены, подобранные по web.max.ru */
+:root {
+  --color-accent: #2d8cff;
+  --color-accent-hover: #1a7cf0;
+  --color-text: #000000;
+  --color-text-secondary: #818c99;
+  --color-bg: #ffffff;
+  --color-bg-input: #f2f3f5;
+  --color-bg-selected: #e8f1fd;
+  --color-bubble-in: #ffffff;
+  --color-bubble-out: #e3f4ff;
+  --color-danger: #e64646;
+  --color-chat-bg-from: #7eb6f5;
+  --color-chat-bg-to: #93d0e3;
+
+  --font-family:
+    Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --radius-bubble: 18px;
+  --radius-input: 12px;
+  --sidebar-width: 450px;
+
+  font-family: var(--font-family);
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.app-placeholder {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  text-align: center;
+}
