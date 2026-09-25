@@ -16,7 +16,7 @@ describe('session persistence', () => {
 
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
-    expect(loadSession()).toEqual(session)
+    expect(loadSession()).toEqual({ session, remember: false })
   })
 
   it('saves to localStorage when remember is set', () => {
@@ -24,7 +24,7 @@ describe('session persistence', () => {
 
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).not.toBeNull()
     expect(sessionStorage.getItem(SESSION_STORAGE_KEY)).toBeNull()
-    expect(loadSession()).toEqual(session)
+    expect(loadSession()).toEqual({ session, remember: true })
   })
 
   it('keeps a single copy when the remember choice changes', () => {

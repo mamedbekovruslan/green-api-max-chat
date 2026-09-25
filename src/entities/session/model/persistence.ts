@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { isAllowedApiUrl } from '@/shared/api/green-api'
+import { readJson, removeItem, storageKindFor, writeJson } from '@/shared/lib/storage'
 
 export const SESSION_STORAGE_KEY = 'max-chat:session'
 
@@ -14,53 +15,27 @@ const sessionSchema = z.object({
 
 export type Session = z.infer<typeof sessionSchema>
 
-type StorageName = 'localStorage' | 'sessionStorage'
-
-function getStorage(name: StorageName): Storage | null {
-  try {
-    return window[name]
-  } catch {
-    return null
-  }
+export interface StoredSession {
+  session: Session
+  remember: boolean
 }
 
-function readFrom(name: StorageName): Session | null {
-  const storage = getStorage(name)
-  try {
-    const raw = storage?.getItem(SESSION_STORAGE_KEY)
-    if (raw == null) return null
-    const result = sessionSchema.safeParse(JSON.parse(raw))
-    if (result.success) return result.data
-  } catch {
-    // Повреждённый JSON обрабатывается так же, как невалидная сессия ниже.
-  }
-  removeFrom(name)
+export function loadSession(): StoredSession | null {
+  const tabSession = readJson('session', SESSION_STORAGE_KEY, sessionSchema)
+  if (tabSession) return { session: tabSession, remember: false }
+
+  const rememberedSession = readJson('local', SESSION_STORAGE_KEY, sessionSchema)
+  if (rememberedSession) return { session: rememberedSession, remember: true }
+
   return null
 }
 
-function removeFrom(name: StorageName): void {
-  try {
-    getStorage(name)?.removeItem(SESSION_STORAGE_KEY)
-  } catch {
-    // Хранилище недоступно — удалять нечего.
-  }
-}
-
-export function loadSession(): Session | null {
-  return readFrom('sessionStorage') ?? readFrom('localStorage')
-}
-
 export function saveSession(session: Session, remember: boolean): void {
-  const target: StorageName = remember ? 'localStorage' : 'sessionStorage'
-  removeFrom(remember ? 'sessionStorage' : 'localStorage')
-  try {
-    getStorage(target)?.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
-  } catch {
-    // Хранилище недоступно (приватный режим, квота) — сессия живёт только в памяти.
-  }
+  removeItem(storageKindFor(!remember), SESSION_STORAGE_KEY)
+  writeJson(storageKindFor(remember), SESSION_STORAGE_KEY, session)
 }
 
 export function clearSession(): void {
-  removeFrom('sessionStorage')
-  removeFrom('localStorage')
+  removeItem('session', SESSION_STORAGE_KEY)
+  removeItem('local', SESSION_STORAGE_KEY)
 }

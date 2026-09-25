@@ -5,14 +5,17 @@ import { useSessionStore } from './store'
 
 describe('useSessionStore', () => {
   beforeEach(() => {
-    useSessionStore.setState({ session: null })
+    useSessionStore.setState({ session: null, remember: false })
   })
 
-  it('login stores the session in state and in the browser storage', () => {
+  it('login stores the session and the remember choice', () => {
     useSessionStore.getState().login({ credentials: testCredentials }, { remember: true })
 
-    expect(useSessionStore.getState().session).toEqual({ credentials: testCredentials })
-    expect(loadSession()).toEqual({ credentials: testCredentials })
+    expect(useSessionStore.getState()).toMatchObject({
+      session: { credentials: testCredentials },
+      remember: true,
+    })
+    expect(loadSession()).toEqual({ session: { credentials: testCredentials }, remember: true })
   })
 
   it('logout clears the state and the browser storage', () => {
@@ -20,7 +23,7 @@ describe('useSessionStore', () => {
 
     useSessionStore.getState().logout()
 
-    expect(useSessionStore.getState().session).toBeNull()
+    expect(useSessionStore.getState()).toMatchObject({ session: null, remember: false })
     expect(loadSession()).toBeNull()
   })
 })

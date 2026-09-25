@@ -3,18 +3,22 @@ import { clearSession, loadSession, saveSession, type Session } from './persiste
 
 interface SessionState {
   session: Session | null
+  remember: boolean
   login: (session: Session, options: { remember: boolean }) => void
   logout: () => void
 }
 
+const stored = loadSession()
+
 export const useSessionStore = create<SessionState>()((set) => ({
-  session: loadSession(),
+  session: stored?.session ?? null,
+  remember: stored?.remember ?? false,
   login: (session, { remember }) => {
     saveSession(session, remember)
-    set({ session })
+    set({ session, remember })
   },
   logout: () => {
     clearSession()
-    set({ session: null })
+    set({ session: null, remember: false })
   },
 }))

@@ -120,7 +120,7 @@ describe('LoginForm', () => {
 
     await expect.poll(() => useSessionStore.getState().session).not.toBeNull()
     expect(localStorage.length).toBe(1)
-    expect(loadSession()?.wid).toBe('79990000001@c.us')
+    expect(loadSession()).toMatchObject({ session: { wid: '79990000001@c.us' }, remember: true })
   })
 
   it('shows a readable error for a wrong token', async () => {
