@@ -6,11 +6,12 @@ import styles from './ChatListItem.module.css'
 interface ChatListItemProps {
   chat: Chat
   subtitle: string
+  time?: string | undefined
   active: boolean
   onSelect: (chatId: string) => void
 }
 
-export function ChatListItem({ chat, subtitle, active, onSelect }: ChatListItemProps) {
+export function ChatListItem({ chat, subtitle, time, active, onSelect }: ChatListItemProps) {
   return (
     <button
       type="button"
@@ -20,7 +21,10 @@ export function ChatListItem({ chat, subtitle, active, onSelect }: ChatListItemP
     >
       <Avatar name={chat.name} seed={chat.chatId} src={chat.avatarUrl} size={56} />
       <span className={styles.body}>
-        <span className={styles.name}>{chat.name}</span>
+        <span className={styles.top}>
+          <span className={styles.name}>{chat.name}</span>
+          {time && <span className={styles.time}>{time}</span>}
+        </span>
         <span className={styles.subtitle}>{subtitle}</span>
       </span>
     </button>

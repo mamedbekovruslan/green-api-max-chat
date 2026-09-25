@@ -1,0 +1,52 @@
+.form {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 8px 16px 16px;
+}
+
+.panel {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 6px 6px 16px;
+  border-radius: 24px;
+  background: var(--color-bg);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+}
+
+.textarea {
+  flex: 1;
+  min-height: 36px;
+  max-height: 160px;
+  padding: 7px 0;
+  border: none;
+  outline: none;
+  resize: none;
+  line-height: 22px;
+  background: transparent;
+}
+
+.textarea::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.textarea:disabled {
+  cursor: not-allowed;
+}
+
+.counter {
+  align-self: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.counterLimit {
+  color: var(--color-danger);
+}
+
+.send:disabled {
+  cursor: default;
+  opacity: 0.4;
+}

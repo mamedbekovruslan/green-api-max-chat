@@ -10,6 +10,7 @@ export function historyToMessages(chatId: string, history: HistoryMessage[]): Me
       timestamp: item.timestamp * 1000,
       direction: item.direction,
       status: item.status ?? null,
+      failureReason: null,
     }))
     .sort((a, b) => a.timestamp - b.timestamp)
 }

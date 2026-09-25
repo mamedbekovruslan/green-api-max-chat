@@ -1,11 +1,16 @@
 import { useLayoutEffect, useRef } from 'react'
-import { DaySeparator, groupByDay, MessageBubble } from '@/entities/message'
+import { DaySeparator, groupByDay, MessageBubble, type Message } from '@/entities/message'
 import { useChatMessages } from '@/features/chat-history'
 import { getErrorMessage } from '@/shared/lib/errors'
 import { Button } from '@/shared/ui'
 import styles from './MessageList.module.css'
 
-export function MessageList({ chatId }: { chatId: string }) {
+interface MessageListProps {
+  chatId: string
+  onRetry: (message: Message) => void
+}
+
+export function MessageList({ chatId, onRetry }: MessageListProps) {
   const { data: messages, error, isPending, isError, refetch, isFetching } = useChatMessages(chatId)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -40,7 +45,25 @@ export function MessageList({ chatId }: { chatId: string }) {
           item.type === 'day' ? (
             <DaySeparator key={item.key} label={item.label} />
           ) : (
-            <MessageBubble key={item.key} message={item.message} />
+            <MessageBubble
+              key={item.key}
+              message={item.message}
+              footer={
+                item.message.status === 'failed' && (
+                  <p className={styles.failure}>
+                    {item.message.failureReason ?? 'Не удалось отправить'}
+                    {' · '}
+                    <button
+                      type="button"
+                      className={styles.retry}
+                      onClick={() => onRetry(item.message)}
+                    >
+                      Повторить
+                    </button>
+                  </p>
+                )
+              }
+            />
           ),
         )}
       </div>

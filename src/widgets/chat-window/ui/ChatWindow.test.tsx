@@ -1,5 +1,5 @@
 import { screen, within } from '@testing-library/react'
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useChatStore } from '@/entities/chat'
 import { useSessionStore } from '@/entities/session'
@@ -76,5 +76,67 @@ describe('ChatWindow', () => {
     await user.click(screen.getByRole('button', { name: 'Повторить' }))
 
     expect(await screen.findByRole('log', { name: 'Сообщения' })).toBeInTheDocument()
+  })
+
+  it('keeps the input disabled until the history is loaded', async () => {
+    server.use(http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])))
+    openContactChat()
+
+    renderWithProviders(<ChatWindow />)
+
+    const input = screen.getByRole('textbox', { name: 'Сообщение' })
+    expect(input).toBeDisabled()
+    await screen.findByText('Сообщений пока нет. Напишите первым!')
+    expect(input).toBeEnabled()
+  })
+
+  it('shows a sent message immediately and marks it as sent', async () => {
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])),
+      http.post(greenApiUrl('sendMessage'), async ({ request }) => {
+        expect(await request.json()).toEqual({ chatId: contactChat.chatId, message: 'Привет' })
+        await delay(50)
+        return HttpResponse.json({ idMessage: '1790400000000' })
+      }),
+    )
+    openContactChat()
+    const { user } = renderWithProviders(<ChatWindow />)
+    const input = await screen.findByRole('textbox', { name: 'Сообщение' })
+    await screen.findByText('Сообщений пока нет. Напишите первым!')
+
+    await user.type(input, 'Привет{Enter}')
+
+    const feed = await screen.findByRole('log', { name: 'Сообщения' })
+    expect(within(feed).getByText('Привет')).toBeInTheDocument()
+    expect(within(feed).getByRole('img', { name: 'Отправляется' })).toBeInTheDocument()
+    expect(await within(feed).findByRole('img', { name: 'Отправлено' })).toBeInTheDocument()
+  })
+
+  it('marks a failed message and sends it again on retry', async () => {
+    let attempts = 0
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])),
+      http.post(greenApiUrl('sendMessage'), () => {
+        attempts += 1
+        return attempts === 1
+          ? HttpResponse.json({ quotaData: {} }, { status: 466 })
+          : HttpResponse.json({ idMessage: '1790400000001' })
+      }),
+    )
+    openContactChat()
+    const { user } = renderWithProviders(<ChatWindow />)
+    await screen.findByText('Сообщений пока нет. Напишите первым!')
+
+    await user.type(screen.getByRole('textbox', { name: 'Сообщение' }), 'Привет{Enter}')
+
+    const feed = await screen.findByRole('log', { name: 'Сообщения' })
+    expect(await within(feed).findByRole('img', { name: 'Не отправлено' })).toBeInTheDocument()
+    expect(within(feed).getByText(/Превышен лимит тарифа/)).toBeInTheDocument()
+
+    await user.click(within(feed).getByRole('button', { name: 'Повторить' }))
+
+    expect(await within(feed).findByRole('img', { name: 'Отправлено' })).toBeInTheDocument()
+    expect(within(feed).getAllByText('Привет')).toHaveLength(1)
+    expect(within(feed).queryByText(/Превышен лимит тарифа/)).not.toBeInTheDocument()
   })
 })

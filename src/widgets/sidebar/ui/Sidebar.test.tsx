@@ -1,6 +1,7 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useChatStore } from '@/entities/chat'
+import { messagesQueryKey, type Message } from '@/entities/message'
 import { useSessionStore } from '@/entities/session'
 import { contactChat, otherChat } from '@/test/fixtures/chats'
 import { testCredentials } from '@/test/fixtures/credentials'
@@ -90,5 +91,31 @@ describe('Sidebar', () => {
     expect(useSessionStore.getState().session).not.toBeNull()
     expect(useChatStore.getState().chats).toEqual([contactChat])
     expect(logoutButton).toHaveFocus()
+  })
+
+  it('shows the phone until messages are loaded, then the last message', async () => {
+    useChatStore.getState().setChats([contactChat])
+    const { queryClient } = renderWithProviders(<Sidebar />)
+    const item = screen.getByRole('button', { name: /Имя в контактах/ })
+    expect(item).toHaveTextContent('+7 999 000-00-00')
+
+    const lastMessage: Message = {
+      id: '1',
+      chatId: contactChat.chatId,
+      text: 'Последнее сообщение',
+      timestamp: new Date(2026, 8, 22, 10, 0).getTime(),
+      direction: 'incoming',
+      status: null,
+      failureReason: null,
+    }
+    act(() =>
+      queryClient.setQueryData(messagesQueryKey(testCredentials.idInstance, contactChat.chatId), [
+        lastMessage,
+      ]),
+    )
+
+    await waitFor(() => expect(item).toHaveTextContent('Последнее сообщение'))
+    expect(item).toHaveTextContent('22 сент.')
+    expect(item).not.toHaveTextContent('+7 999 000-00-00')
   })
 })

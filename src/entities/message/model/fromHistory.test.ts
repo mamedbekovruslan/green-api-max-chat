@@ -16,6 +16,7 @@ describe('historyToMessages', () => {
         timestamp: 100_000,
         direction: 'outgoing',
         status: 'read',
+        failureReason: null,
       },
       {
         id: 'b',
@@ -24,6 +25,7 @@ describe('historyToMessages', () => {
         timestamp: 200_000,
         direction: 'incoming',
         status: null,
+        failureReason: null,
       },
     ])
   })

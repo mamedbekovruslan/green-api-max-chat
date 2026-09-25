@@ -10,6 +10,7 @@ const base: Message = {
   timestamp: new Date(2026, 4, 25, 14, 33).getTime(),
   direction: 'outgoing',
   status: 'read',
+  failureReason: null,
 }
 
 describe('MessageBubble', () => {

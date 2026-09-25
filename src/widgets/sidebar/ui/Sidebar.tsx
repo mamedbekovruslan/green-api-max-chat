@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ChatListItem, filterChats, useChatStore } from '@/entities/chat'
+import { filterChats, useChatStore } from '@/entities/chat'
 import { useSessionStore } from '@/entities/session'
 import { useLogout } from '@/features/auth'
 import { NewChatForm } from '@/features/create-chat'
-import { formatPhone, phoneFromWid } from '@/shared/lib/phone'
+import { phoneFromWid } from '@/shared/lib/phone'
 import { ConfirmDialog, IconButton, LogoutIcon, PlusIcon, SearchIcon } from '@/shared/ui'
+import { ChatRow } from './ChatRow'
 import styles from './Sidebar.module.css'
 
 export function Sidebar() {
@@ -53,12 +54,7 @@ export function Sidebar() {
             <ul className={styles.list} aria-label="Список чатов">
               {visibleChats.map((chat) => (
                 <li key={chat.chatId}>
-                  <ChatListItem
-                    chat={chat}
-                    subtitle={chat.phone ? formatPhone(chat.phone) : ''}
-                    active={chat.chatId === activeChatId}
-                    onSelect={openChat}
-                  />
+                  <ChatRow chat={chat} active={chat.chatId === activeChatId} onSelect={openChat} />
                 </li>
               ))}
             </ul>

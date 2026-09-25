@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Message } from '../model/types'
-import { formatDay, formatTime } from './formatDate'
+import { formatDay, formatListTime, formatTime } from './formatDate'
 import { groupByDay } from './groupByDay'
 
 function message(id: string, date: Date): Message {
@@ -11,6 +11,7 @@ function message(id: string, date: Date): Message {
     timestamp: date.getTime(),
     direction: 'incoming',
     status: null,
+    failureReason: null,
   }
 }
 
@@ -43,5 +44,14 @@ describe('groupByDay', () => {
 
   it('returns nothing for no messages', () => {
     expect(groupByDay([])).toEqual([])
+  })
+})
+
+describe('formatListTime', () => {
+  it('shows the time for today and a short date otherwise', () => {
+    const now = new Date(2026, 8, 25, 18, 0).getTime()
+
+    expect(formatListTime(new Date(2026, 8, 25, 16, 27).getTime(), now)).toBe('16:27')
+    expect(formatListTime(new Date(2026, 8, 22, 10, 0).getTime(), now)).toBe('22 сент.')
   })
 })
