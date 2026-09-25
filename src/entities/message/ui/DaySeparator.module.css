@@ -1,0 +1,14 @@
+.separator {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 6px;
+}
+
+.label {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgb(0 0 0 / 18%);
+}

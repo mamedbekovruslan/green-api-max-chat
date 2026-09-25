@@ -1,0 +1,68 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.rowIncoming {
+  align-items: flex-start;
+}
+
+.rowOutgoing {
+  align-items: flex-end;
+}
+
+.bubble {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  column-gap: 8px;
+  max-width: min(75%, 560px);
+  padding: 7px 12px;
+  border-radius: var(--radius-bubble);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 6%);
+}
+
+.incoming {
+  background: var(--color-bubble-in);
+}
+
+.outgoing {
+  background: var(--color-bubble-out);
+}
+
+.text {
+  flex: 1 1 auto;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.status {
+  display: inline-flex;
+}
+
+.status svg {
+  width: 15px;
+  height: 15px;
+}
+
+.status-read {
+  color: var(--color-accent);
+}
+
+.status-failed {
+  color: var(--color-danger);
+}

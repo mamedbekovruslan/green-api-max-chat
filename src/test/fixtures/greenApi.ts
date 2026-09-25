@@ -101,3 +101,85 @@ export const stateChangedBody = {
   timestamp: 1790342900,
   stateInstance: 'authorized',
 }
+
+const historyBase = {
+  chatId: CONTACT_CHAT_ID,
+  chatType: 'user',
+  deletedMessageId: '',
+  editedMessageId: '',
+  isEdited: false,
+  isDeleted: false,
+  isForwarded: false,
+  forwardingScore: 0,
+}
+
+export const historyIncomingText = {
+  ...historyBase,
+  type: 'incoming',
+  idMessage: '117331909909756411',
+  timestamp: 1790342900,
+  typeMessage: 'textMessage',
+  textMessage: 'Входящее сообщение',
+  senderId: CONTACT_CHAT_ID,
+  senderName: 'Имя в профиле',
+  senderType: 'user',
+  senderContactName: 'Имя в контактах',
+  isRead: true,
+  isReadTimestamp: 1790342901,
+}
+
+export const historyOutgoingExtendedText = {
+  ...historyBase,
+  type: 'outgoing',
+  idMessage: '1790342846743',
+  timestamp: 1790342846,
+  typeMessage: 'extendedTextMessage',
+  textMessage: 'Исходящее сообщение',
+  extendedTextMessage: {
+    text: 'Исходящее сообщение',
+    description: '',
+    title: '',
+    previewType: 'None',
+    jpegThumbnail: '',
+    forwardingScore: 0,
+    isForwarded: false,
+  },
+  statusMessage: 'read',
+  sendByApi: true,
+}
+
+export const historyOutgoingDelivered = {
+  ...historyBase,
+  type: 'outgoing',
+  idMessage: '1790260000000',
+  timestamp: 1790260000,
+  typeMessage: 'textMessage',
+  textMessage: 'Сообщение за прошлый день',
+  statusMessage: 'delivered',
+  sendByApi: false,
+}
+
+export const historyIncomingImage = {
+  ...historyBase,
+  type: 'incoming',
+  idMessage: '117331909909756499',
+  timestamp: 1790342950,
+  typeMessage: 'imageMessage',
+  downloadUrl: 'https://example.com/image.jpg',
+  caption: '',
+}
+
+export const historyDeletedText = {
+  ...historyIncomingText,
+  idMessage: '117331909909756498',
+  timestamp: 1790342960,
+  isDeleted: true,
+}
+
+export const chatHistoryResponse = [
+  historyDeletedText,
+  historyIncomingImage,
+  historyIncomingText,
+  historyOutgoingExtendedText,
+  historyOutgoingDelivered,
+]

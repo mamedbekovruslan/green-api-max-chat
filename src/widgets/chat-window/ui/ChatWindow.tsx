@@ -2,6 +2,7 @@ import { useChatStore } from '@/entities/chat'
 import { formatPhone } from '@/shared/lib/phone'
 import { Avatar } from '@/shared/ui'
 import styles from './ChatWindow.module.css'
+import { MessageList } from './MessageList'
 
 export function ChatWindow() {
   const chat = useChatStore((state) =>
@@ -25,7 +26,7 @@ export function ChatWindow() {
           {chat.phone && <p className={styles.phone}>{formatPhone(chat.phone)}</p>}
         </div>
       </header>
-      <div className={styles.body} />
+      <MessageList key={chat.chatId} chatId={chat.chatId} />
     </section>
   )
 }

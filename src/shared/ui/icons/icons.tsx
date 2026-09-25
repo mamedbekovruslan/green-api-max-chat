@@ -54,3 +54,45 @@ export function LogoutIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function ClockIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </Icon>
+  )
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m4 12 5 5L20 6" />
+    </Icon>
+  )
+}
+
+export function DoubleCheckIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m2 12 5 5L18 6M12 16l1 1L24 6" />
+    </Icon>
+  )
+}
+
+export function AlertIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6M12 16.5v.5" />
+    </Icon>
+  )
+}
+
+export function SendIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 12 20 4l-4 16-4-7-8-1z" />
+    </Icon>
+  )
+}

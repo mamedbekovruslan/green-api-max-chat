@@ -154,3 +154,46 @@ function readTypeWebhook(body: unknown): string | undefined {
   }
   return undefined
 }
+
+export const chatHistorySchema = z.array(z.unknown())
+
+const historyItemSchema = z.object({
+  type: z.enum(['incoming', 'outgoing']),
+  idMessage: z.string(),
+  timestamp: z.number(),
+  typeMessage: z.string(),
+  textMessage: z.string().optional(),
+  extendedTextMessage: z.object({ text: z.string() }).optional(),
+  statusMessage: z.string().optional(),
+  isDeleted: z.boolean().optional(),
+})
+
+export interface HistoryMessage {
+  idMessage: string
+  timestamp: number
+  direction: 'incoming' | 'outgoing'
+  text: string
+  status: OutgoingStatus | undefined
+}
+
+export function parseHistoryItem(item: unknown): HistoryMessage | null {
+  const result = historyItemSchema.safeParse(item)
+  if (!result.success || result.data.isDeleted) return null
+
+  const { data } = result
+  const text =
+    data.typeMessage === 'textMessage'
+      ? data.textMessage
+      : data.typeMessage === 'extendedTextMessage'
+        ? (data.extendedTextMessage?.text ?? data.textMessage)
+        : undefined
+  if (text === undefined) return null
+
+  return {
+    idMessage: data.idMessage,
+    timestamp: data.timestamp,
+    direction: data.type,
+    text,
+    status: data.type === 'outgoing' ? toOutgoingStatus(data.statusMessage ?? 'sent') : undefined,
+  }
+}

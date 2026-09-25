@@ -1,5 +1,6 @@
 export {
   createGreenApiClient,
+  DEFAULT_HISTORY_COUNT,
   DEFAULT_RECEIVE_TIMEOUT_S,
   MAX_MESSAGE_LENGTH,
   type GreenApiClient,
@@ -7,4 +8,10 @@ export {
 } from './client'
 export { defaultApiUrl, isAllowedApiUrl, normalizeApiUrl, type Credentials } from './credentials'
 export { ApiError, isApiError, type ApiErrorKind } from './errors'
-export type { ContactInfo, InstanceSettings, Notification, OutgoingStatus } from './schemas'
+export type {
+  ContactInfo,
+  HistoryMessage,
+  InstanceSettings,
+  Notification,
+  OutgoingStatus,
+} from './schemas'

@@ -1,20 +1,24 @@
 import type { Credentials } from './credentials'
 import { greenApiRequest, type RequestOptions } from './request'
 import {
+  chatHistorySchema,
   checkAccountSchema,
   contactInfoSchema,
   deleteNotificationSchema,
   notificationEnvelopeSchema,
+  parseHistoryItem,
   parseNotificationBody,
   sendMessageSchema,
   settingsSchema,
   stateInstanceSchema,
   type ContactInfo,
+  type HistoryMessage,
   type InstanceSettings,
   type Notification,
 } from './schemas'
 
 export const MAX_MESSAGE_LENGTH = 4000
+export const DEFAULT_HISTORY_COUNT = 100
 export const DEFAULT_RECEIVE_TIMEOUT_S = 20
 // Сервер держит long polling до receiveTimeout секунд — HTTP-таймаут должен быть больше.
 const RECEIVE_TIMEOUT_MARGIN_MS = 10_000
@@ -25,6 +29,10 @@ interface CallOptions {
 
 interface ReceiveOptions extends CallOptions {
   receiveTimeout?: number | undefined
+}
+
+interface HistoryOptions extends CallOptions {
+  count?: number | undefined
 }
 
 export interface ReceivedNotification {
@@ -38,6 +46,7 @@ export interface GreenApiClient {
   checkAccount(phoneNumber: string, options?: CallOptions): Promise<string | null>
   getContactInfo(chatId: string, options?: CallOptions): Promise<ContactInfo>
   sendMessage(chatId: string, message: string, options?: CallOptions): Promise<string>
+  getChatHistory(chatId: string, options?: HistoryOptions): Promise<HistoryMessage[]>
   receiveNotification(options?: ReceiveOptions): Promise<ReceivedNotification | null>
   deleteNotification(receiptId: number, options?: CallOptions): Promise<boolean>
 }
@@ -94,6 +103,16 @@ export function createGreenApiClient(credentials: Credentials): GreenApiClient {
         signal: options.signal,
       })
       return data.idMessage
+    },
+
+    async getChatHistory(chatId, options = {}) {
+      const items = await request({
+        method: 'getChatHistory',
+        body: { chatId, count: options.count ?? DEFAULT_HISTORY_COUNT },
+        schema: chatHistorySchema,
+        signal: options.signal,
+      })
+      return items.map(parseHistoryItem).filter((item) => item !== null)
     },
 
     async receiveNotification(options = {}) {

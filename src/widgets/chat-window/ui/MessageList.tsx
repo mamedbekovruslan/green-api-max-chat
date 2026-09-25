@@ -1,0 +1,49 @@
+import { useLayoutEffect, useRef } from 'react'
+import { DaySeparator, groupByDay, MessageBubble } from '@/entities/message'
+import { useChatMessages } from '@/features/chat-history'
+import { getErrorMessage } from '@/shared/lib/errors'
+import { Button } from '@/shared/ui'
+import styles from './MessageList.module.css'
+
+export function MessageList({ chatId }: { chatId: string }) {
+  const { data: messages, error, isPending, isError, refetch, isFetching } = useChatMessages(chatId)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const container = scrollRef.current
+    if (container) container.scrollTop = container.scrollHeight
+  }, [messages])
+
+  if (isPending) {
+    return <p className={styles.notice}>Загрузка сообщений…</p>
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.notice} role="alert">
+        <p>Не удалось загрузить историю. {getErrorMessage(error)}</p>
+        <Button variant="secondary" loading={isFetching} onClick={() => void refetch()}>
+          Повторить
+        </Button>
+      </div>
+    )
+  }
+
+  if (messages.length === 0) {
+    return <p className={styles.notice}>Сообщений пока нет. Напишите первым!</p>
+  }
+
+  return (
+    <div ref={scrollRef} className={styles.scroll}>
+      <div className={styles.feed} role="log" aria-label="Сообщения" aria-live="polite">
+        {groupByDay(messages).map((item) =>
+          item.type === 'day' ? (
+            <DaySeparator key={item.key} label={item.label} />
+          ) : (
+            <MessageBubble key={item.key} message={item.message} />
+          ),
+        )}
+      </div>
+    </div>
+  )
+}
