@@ -23,6 +23,16 @@ describe('parseHistoryItem', () => {
       direction: 'incoming',
       text: 'Входящее сообщение',
       status: undefined,
+      unread: false,
+    })
+  })
+
+  it('marks incoming messages that are not read yet as unread', () => {
+    expect(parseHistoryItem({ ...historyIncomingText, isRead: false })).toMatchObject({
+      unread: true,
+    })
+    expect(parseHistoryItem({ ...historyOutgoingDelivered, isRead: false })).toMatchObject({
+      unread: false,
     })
   })
 
@@ -33,6 +43,7 @@ describe('parseHistoryItem', () => {
       direction: 'outgoing',
       text: 'Исходящее сообщение',
       status: 'read',
+      unread: false,
     })
   })
 

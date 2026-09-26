@@ -4,11 +4,13 @@ import { useSessionStore } from '@/entities/session'
 import { ChatPage } from '@/pages/chat'
 import { LoginPage } from '@/pages/login'
 import { createQueryClient } from './queryClient'
+import { useChatHistoryPrefetch } from './useChatHistoryPrefetch'
 import { useChatsPersistence } from './useChatsPersistence'
 import { useNotificationPolling } from './useNotificationPolling'
 
 function Router() {
   useChatsPersistence()
+  useChatHistoryPrefetch()
   useNotificationPolling()
   const isAuthenticated = useSessionStore((state) => state.session !== null)
   return isAuthenticated ? <ChatPage /> : <LoginPage />

@@ -5,7 +5,7 @@ import { useChatStore } from '@/entities/chat'
 import { useSessionStore } from '@/entities/session'
 import { contactChat } from '@/test/fixtures/chats'
 import { testCredentials } from '@/test/fixtures/credentials'
-import { chatHistoryResponse } from '@/test/fixtures/greenApi'
+import { chatHistoryResponse, historyIncomingText } from '@/test/fixtures/greenApi'
 import { greenApiUrl } from '@/test/msw/greenApi'
 import { server } from '@/test/msw/server'
 import { renderWithProviders } from '@/test/renderWithProviders'
@@ -47,6 +47,43 @@ describe('ChatWindow', () => {
         .map((node) => node.textContent),
     ).toEqual(['Сообщение за прошлый день', 'Исходящее сообщение', 'Входящее сообщение'])
     expect(within(feed).getByRole('img', { name: 'Прочитано' })).toBeInTheDocument()
+  })
+
+  it('marks the chat as read when it has unread messages', async () => {
+    const readChats: unknown[] = []
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () =>
+        HttpResponse.json([{ ...historyIncomingText, isRead: false }]),
+      ),
+      http.post(greenApiUrl('readChat'), async ({ request }) => {
+        readChats.push(await request.json())
+        return HttpResponse.json({ setRead: true })
+      }),
+    )
+    openContactChat()
+
+    renderWithProviders(<ChatWindow />)
+
+    await screen.findByRole('log', { name: 'Сообщения' })
+    await expect.poll(() => readChats).toEqual([{ chatId: contactChat.chatId }])
+    expect(useChatStore.getState().unread).toEqual({})
+  })
+
+  it('does not mark a chat without unread messages as read', async () => {
+    let readChatCalls = 0
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json(chatHistoryResponse)),
+      http.post(greenApiUrl('readChat'), () => {
+        readChatCalls += 1
+        return HttpResponse.json({ setRead: true })
+      }),
+    )
+    openContactChat()
+
+    renderWithProviders(<ChatWindow />)
+
+    await screen.findByRole('log', { name: 'Сообщения' })
+    expect(readChatCalls).toBe(0)
   })
 
   it('shows an empty state for a chat without messages', async () => {

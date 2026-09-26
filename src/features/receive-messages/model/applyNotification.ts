@@ -70,7 +70,7 @@ function applyIncomingText(notification: IncomingText, context: NotificationCont
 
   chats.setPreview(chatId, { text: notification.text, timestamp })
   chats.bumpChat(chatId)
-  if (useChatStore.getState().activeChatId !== chatId) chats.incrementUnread(chatId)
+  chats.incrementUnread(chatId)
 }
 
 function applyStatus(notification: StatusUpdate, context: NotificationContext): void {

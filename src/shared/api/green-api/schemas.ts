@@ -30,6 +30,10 @@ export const sendMessageSchema = z.object({
   idMessage: z.string(),
 })
 
+export const readChatSchema = z.object({
+  setRead: z.boolean(),
+})
+
 export const deleteNotificationSchema = z.object({
   result: z.boolean(),
 })
@@ -165,6 +169,7 @@ const historyItemSchema = z.object({
   textMessage: z.string().optional(),
   extendedTextMessage: z.object({ text: z.string() }).optional(),
   statusMessage: z.string().optional(),
+  isRead: z.boolean().optional(),
   isDeleted: z.boolean().optional(),
 })
 
@@ -174,6 +179,7 @@ export interface HistoryMessage {
   direction: 'incoming' | 'outgoing'
   text: string
   status: OutgoingStatus | undefined
+  unread: boolean
 }
 
 export function parseHistoryItem(item: unknown): HistoryMessage | null {
@@ -195,5 +201,6 @@ export function parseHistoryItem(item: unknown): HistoryMessage | null {
     direction: data.type,
     text,
     status: data.type === 'outgoing' ? toOutgoingStatus(data.statusMessage ?? 'sent') : undefined,
+    unread: data.type === 'incoming' && data.isRead === false,
   }
 }

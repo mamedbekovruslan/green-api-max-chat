@@ -90,14 +90,6 @@ describe('applyNotification: incoming text', () => {
     expect(state.unread[contactChat.chatId]).toBe(1)
   })
 
-  it('does not count messages of the open chat as unread', () => {
-    useChatStore.getState().openChat(contactChat.chatId)
-
-    applyNotification(incoming(), createContext())
-
-    expect(useChatStore.getState().unread[contactChat.chatId]).toBeUndefined()
-  })
-
   it('ignores a notification delivered twice', () => {
     const context = createContext()
     context.queryClient.setQueryData(messagesQueryKey(ID, contactChat.chatId), [outgoing])

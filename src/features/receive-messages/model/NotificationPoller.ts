@@ -1,8 +1,7 @@
 import { isApiError, type GreenApiClient, type Notification } from '@/shared/api/green-api'
+import { sleep, type Sleep } from '@/shared/lib/async'
 
 export type ConnectionStatus = 'online' | 'reconnecting'
-
-type Sleep = (ms: number, signal: AbortSignal) => Promise<void>
 
 export interface NotificationPollerOptions {
   client: Pick<GreenApiClient, 'receiveNotification' | 'deleteNotification'>
@@ -15,19 +14,6 @@ export interface NotificationPollerOptions {
   maxBackoffMs?: number
   sleep?: Sleep
 }
-
-export const sleep: Sleep = (ms, signal) =>
-  new Promise((resolve) => {
-    const timer = setTimeout(resolve, ms)
-    signal.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer)
-        resolve()
-      },
-      { once: true },
-    )
-  })
 
 export class NotificationPoller {
   readonly #options: NotificationPollerOptions

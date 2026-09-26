@@ -56,15 +56,20 @@ describe('useChatStore', () => {
     ])
   })
 
-  it('counts unread messages and clears them when the chat is opened', () => {
+  it('counts unread messages', () => {
     useChatStore.getState().setChats([contactChat])
     useChatStore.getState().incrementUnread(contactChat.chatId)
     useChatStore.getState().incrementUnread(contactChat.chatId)
+
     expect(useChatStore.getState().unread[contactChat.chatId]).toBe(2)
+  })
 
-    useChatStore.getState().openChat(contactChat.chatId)
+  it('sets the unread count and drops it at zero', () => {
+    useChatStore.getState().setUnread(contactChat.chatId, 3)
+    expect(useChatStore.getState().unread[contactChat.chatId]).toBe(3)
 
-    expect(useChatStore.getState().unread[contactChat.chatId]).toBeUndefined()
+    useChatStore.getState().setUnread(contactChat.chatId, 0)
+    expect(useChatStore.getState().unread).toEqual({})
   })
 
   it('stores a preview per chat', () => {

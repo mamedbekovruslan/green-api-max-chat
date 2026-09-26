@@ -8,6 +8,7 @@ import {
   notificationEnvelopeSchema,
   parseHistoryItem,
   parseNotificationBody,
+  readChatSchema,
   sendMessageSchema,
   settingsSchema,
   stateInstanceSchema,
@@ -47,6 +48,7 @@ export interface GreenApiClient {
   getContactInfo(chatId: string, options?: CallOptions): Promise<ContactInfo>
   sendMessage(chatId: string, message: string, options?: CallOptions): Promise<string>
   getChatHistory(chatId: string, options?: HistoryOptions): Promise<HistoryMessage[]>
+  readChat(chatId: string, options?: CallOptions): Promise<boolean>
   receiveNotification(options?: ReceiveOptions): Promise<ReceivedNotification | null>
   deleteNotification(receiptId: number, options?: CallOptions): Promise<boolean>
 }
@@ -113,6 +115,16 @@ export function createGreenApiClient(credentials: Credentials): GreenApiClient {
         signal: options.signal,
       })
       return items.map(parseHistoryItem).filter((item) => item !== null)
+    },
+
+    async readChat(chatId, options = {}) {
+      const data = await request({
+        method: 'readChat',
+        body: { chatId },
+        schema: readChatSchema,
+        signal: options.signal,
+      })
+      return data.setRead
     },
 
     async receiveNotification(options = {}) {

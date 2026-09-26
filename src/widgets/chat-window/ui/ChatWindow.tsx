@@ -1,5 +1,6 @@
 import { useChatStore, type Chat } from '@/entities/chat'
 import { useChatMessages } from '@/features/chat-history'
+import { useMarkChatRead } from '@/features/mark-read'
 import { useConnectionStore } from '@/features/receive-messages'
 import { MessageInput, useSendMessage } from '@/features/send-message'
 import { formatPhone } from '@/shared/lib/phone'
@@ -9,6 +10,7 @@ import { MessageList } from './MessageList'
 
 function ActiveChat({ chat }: { chat: Chat }) {
   const history = useChatMessages(chat.chatId)
+  useMarkChatRead(chat.chatId)
   const { send, retry } = useSendMessage(chat.chatId)
   const quotaExceeded = useConnectionStore((state) => state.quotaExceeded)
 

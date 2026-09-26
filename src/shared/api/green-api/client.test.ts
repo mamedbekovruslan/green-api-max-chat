@@ -82,6 +82,17 @@ describe('createGreenApiClient', () => {
     })
   })
 
+  it('readChat posts chatId and returns the setRead flag', async () => {
+    server.use(
+      http.post(greenApiUrl('readChat'), async ({ request }) => {
+        expect(await request.json()).toEqual({ chatId: CONTACT_CHAT_ID })
+        return HttpResponse.json({ setRead: true })
+      }),
+    )
+
+    await expect(client.readChat(CONTACT_CHAT_ID)).resolves.toBe(true)
+  })
+
   describe('sendMessage', () => {
     it('posts chatId and message and returns idMessage', async () => {
       server.use(

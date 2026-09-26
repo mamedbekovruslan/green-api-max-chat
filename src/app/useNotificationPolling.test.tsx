@@ -103,6 +103,7 @@ describe('receiving messages', () => {
 
   it('logs out when the token is rejected while polling', async () => {
     server.use(
+      http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])),
       http.get(greenApiUrl('receiveNotification'), () => new HttpResponse(null, { status: 401 })),
     )
     login()

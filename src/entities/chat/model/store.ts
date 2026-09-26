@@ -17,6 +17,7 @@ interface ChatState {
   openChat: (chatId: string) => void
   closeChat: () => void
   incrementUnread: (chatId: string) => void
+  setUnread: (chatId: string, count: number) => void
   setPreview: (chatId: string, preview: ChatPreview) => void
   reset: () => void
 }
@@ -46,14 +47,15 @@ export const useChatStore = create<ChatState>()((set) => ({
       if (!chat || state.chats[0] === chat) return state
       return { chats: [chat, ...state.chats.filter((item) => item !== chat)] }
     }),
-  openChat: (chatId) =>
-    set((state) => {
-      const { [chatId]: _, ...unread } = state.unread
-      return { activeChatId: chatId, unread }
-    }),
+  openChat: (chatId) => set({ activeChatId: chatId }),
   closeChat: () => set({ activeChatId: null }),
   incrementUnread: (chatId) =>
     set((state) => ({ unread: { ...state.unread, [chatId]: (state.unread[chatId] ?? 0) + 1 } })),
+  setUnread: (chatId, count) =>
+    set((state) => {
+      const { [chatId]: _, ...unread } = state.unread
+      return { unread: count > 0 ? { ...unread, [chatId]: count } : unread }
+    }),
   setPreview: (chatId, preview) =>
     set((state) => ({ previews: { ...state.previews, [chatId]: preview } })),
   reset: () => set(initialState),
