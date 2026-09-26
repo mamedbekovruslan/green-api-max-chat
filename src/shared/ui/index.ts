@@ -16,4 +16,5 @@ export {
 } from './icons/icons'
 export { InfoTooltip } from './InfoTooltip/InfoTooltip'
 export { Logo } from './Logo/Logo'
+export { Skeleton } from './Skeleton/Skeleton'
 export { TextField } from './TextField/TextField'

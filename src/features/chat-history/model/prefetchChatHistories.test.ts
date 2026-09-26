@@ -9,6 +9,7 @@ import { historyIncomingText, historyOutgoingDelivered } from '@/test/fixtures/g
 import { greenApiUrl } from '@/test/msw/greenApi'
 import { server } from '@/test/msw/server'
 import { createTestQueryClient } from '@/test/queryWrapper'
+import { useHistoryQueueStore } from './historyQueueStore'
 import { prefetchChatHistories, type PrefetchChatHistoriesOptions } from './prefetchChatHistories'
 
 const ID = testCredentials.idInstance
@@ -51,6 +52,22 @@ const cached = (queryClient: ReturnType<typeof createTestQueryClient>, chatId: s
 describe('prefetchChatHistories', () => {
   beforeEach(() => {
     useChatStore.getState().setChats([contactChat, otherChat])
+    useHistoryQueueStore.getState().setQueued([])
+  })
+
+  it('keeps the chats that wait for their history in the queue', async () => {
+    const snapshots: string[][] = []
+    const { options, queryClient } = setup({
+      sleep: async () => {
+        snapshots.push(useHistoryQueueStore.getState().queued)
+      },
+    })
+    queryClient.setQueryData(messagesQueryKey(ID, 'cached'), [])
+
+    await prefetchChatHistories({ ...options, chatIds: ['cached', ...options.chatIds] })
+
+    expect(snapshots).toEqual([[otherChat.chatId]])
+    expect(useHistoryQueueStore.getState().queued).toEqual([])
   })
 
   it('loads histories one by one with a pause between requests', async () => {
@@ -99,6 +116,7 @@ describe('prefetchChatHistories', () => {
 
     expect(cached(queryClient, contactChat.chatId)).toBeUndefined()
     expect(cached(queryClient, otherChat.chatId)).toHaveLength(1)
+    expect(useHistoryQueueStore.getState().queued).toEqual([])
   })
 
   it('stops when aborted', async () => {

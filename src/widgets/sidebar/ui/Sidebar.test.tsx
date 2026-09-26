@@ -3,11 +3,22 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { useChatStore } from '@/entities/chat'
 import { messagesQueryKey, type Message } from '@/entities/message'
 import { useSessionStore } from '@/entities/session'
+import { useHistoryQueueStore } from '@/features/chat-history'
 import { useConnectionStore } from '@/features/receive-messages'
 import { contactChat, otherChat } from '@/test/fixtures/chats'
 import { testCredentials } from '@/test/fixtures/credentials'
 import { renderWithProviders } from '@/test/renderWithProviders'
 import { Sidebar } from './Sidebar'
+
+const lastMessage: Message = {
+  id: '1',
+  chatId: contactChat.chatId,
+  text: 'Последнее сообщение',
+  timestamp: new Date(2026, 8, 22, 10, 0).getTime(),
+  direction: 'incoming',
+  status: null,
+  failureReason: null,
+}
 
 describe('Sidebar', () => {
   beforeEach(() => {
@@ -17,6 +28,7 @@ describe('Sidebar', () => {
     })
     useChatStore.getState().reset()
     useConnectionStore.getState().reset()
+    useHistoryQueueStore.getState().setQueued([])
   })
 
   it('shows the connection state in the header while reconnecting', () => {
@@ -106,21 +118,43 @@ describe('Sidebar', () => {
     expect(logoutButton).toHaveFocus()
   })
 
+  it('shows a skeleton instead of the preview while the history is queued', async () => {
+    useChatStore.getState().setChats([contactChat])
+    useHistoryQueueStore.getState().setQueued([contactChat.chatId])
+    const { queryClient } = renderWithProviders(<Sidebar />)
+    const item = screen.getByRole('button', { name: /Имя в контактах/ })
+    expect(item).toHaveAttribute('aria-busy', 'true')
+    expect(item).not.toHaveTextContent('+7 999 000-00-00')
+
+    act(() => {
+      queryClient.setQueryData(messagesQueryKey(testCredentials.idInstance, contactChat.chatId), [
+        { ...lastMessage, text: 'Загруженное сообщение' },
+      ])
+      useHistoryQueueStore.getState().dequeue(contactChat.chatId)
+    })
+
+    await waitFor(() => expect(item).toHaveTextContent('Загруженное сообщение'))
+    expect(item).not.toHaveAttribute('aria-busy')
+  })
+
+  it('falls back to the phone when the queued history fails to load', () => {
+    useChatStore.getState().setChats([contactChat])
+    useHistoryQueueStore.getState().setQueued([contactChat.chatId])
+    renderWithProviders(<Sidebar />)
+
+    act(() => useHistoryQueueStore.getState().dequeue(contactChat.chatId))
+
+    const item = screen.getByRole('button', { name: /Имя в контактах/ })
+    expect(item).toHaveTextContent('+7 999 000-00-00')
+    expect(item).not.toHaveAttribute('aria-busy')
+  })
+
   it('shows the phone until messages are loaded, then the last message', async () => {
     useChatStore.getState().setChats([contactChat])
     const { queryClient } = renderWithProviders(<Sidebar />)
     const item = screen.getByRole('button', { name: /Имя в контактах/ })
     expect(item).toHaveTextContent('+7 999 000-00-00')
 
-    const lastMessage: Message = {
-      id: '1',
-      chatId: contactChat.chatId,
-      text: 'Последнее сообщение',
-      timestamp: new Date(2026, 8, 22, 10, 0).getTime(),
-      direction: 'incoming',
-      status: null,
-      failureReason: null,
-    }
     act(() =>
       queryClient.setQueryData(messagesQueryKey(testCredentials.idInstance, contactChat.chatId), [
         lastMessage,
