@@ -1,4 +1,5 @@
 import type { Credentials } from './credentials'
+import { isApiError } from './errors'
 import { greenApiRequest, type RequestOptions } from './request'
 import {
   chatHistorySchema,
@@ -129,13 +130,20 @@ export function createGreenApiClient(credentials: Credentials): GreenApiClient {
 
     async receiveNotification(options = {}) {
       const receiveTimeout = options.receiveTimeout ?? DEFAULT_RECEIVE_TIMEOUT_S
-      const envelope = await request({
-        method: 'receiveNotification',
-        query: { receiveTimeout },
-        schema: notificationEnvelopeSchema,
-        timeoutMs: receiveTimeout * 1000 + RECEIVE_TIMEOUT_MARGIN_MS,
-        signal: options.signal,
-      })
+      let envelope
+      try {
+        envelope = await request({
+          method: 'receiveNotification',
+          query: { receiveTimeout },
+          schema: notificationEnvelopeSchema,
+          timeoutMs: receiveTimeout * 1000 + RECEIVE_TIMEOUT_MARGIN_MS,
+          signal: options.signal,
+        })
+      } catch (error) {
+        // По истечении long polling GREEN-API иногда отвечает 408 вместо null — это пустая очередь.
+        if (isApiError(error) && error.status === 408) return null
+        throw error
+      }
       if (envelope === null) return null
       return {
         receiptId: envelope.receiptId,

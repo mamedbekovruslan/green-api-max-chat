@@ -129,6 +129,22 @@ describe('createGreenApiClient', () => {
       await expect(client.receiveNotification()).resolves.toBeNull()
     })
 
+    it('treats 408 as an empty queue', async () => {
+      server.use(
+        http.get(greenApiUrl('receiveNotification'), () => new HttpResponse(null, { status: 408 })),
+      )
+
+      await expect(client.receiveNotification()).resolves.toBeNull()
+    })
+
+    it('still rejects on other errors', async () => {
+      server.use(
+        http.get(greenApiUrl('receiveNotification'), () => new HttpResponse(null, { status: 500 })),
+      )
+
+      await expect(client.receiveNotification()).rejects.toMatchObject({ kind: 'server' })
+    })
+
     it('passes receiveTimeout and returns the parsed notification', async () => {
       server.use(
         http.get(greenApiUrl('receiveNotification'), ({ request }) => {
