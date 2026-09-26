@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { filterChats, useChatStore } from '@/entities/chat'
 import { useSessionStore } from '@/entities/session'
 import { useLogout } from '@/features/auth'
@@ -20,6 +20,19 @@ export function Sidebar() {
   const wid = useSessionStore((state) => state.session?.wid)
   const isReconnecting = useConnectionStore((state) => state.status === 'reconnecting')
   const logout = useLogout()
+  const listRef = useRef<HTMLUListElement>(null)
+  const previousActiveChatId = useRef(activeChatId)
+
+  useEffect(() => {
+    const closedChatId = previousActiveChatId.current
+    previousActiveChatId.current = activeChatId
+    if (closedChatId === null || activeChatId !== null) return
+
+    const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-chat-id]') ?? []
+    Array.from(rows)
+      .find((row) => row.dataset.chatId === closedChatId)
+      ?.focus()
+  }, [activeChatId])
 
   const visibleChats = filterChats(chats, query)
 
@@ -59,7 +72,7 @@ export function Sidebar() {
           ) : visibleChats.length === 0 ? (
             <p className={styles.empty}>Ничего не найдено</p>
           ) : (
-            <ul className={styles.list} aria-label="Список чатов">
+            <ul ref={listRef} className={styles.list} aria-label="Список чатов">
               {visibleChats.map((chat) => (
                 <li key={chat.chatId}>
                   <ChatRow chat={chat} active={chat.chatId === activeChatId} onSelect={openChat} />

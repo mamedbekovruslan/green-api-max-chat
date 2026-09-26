@@ -42,6 +42,16 @@ describe('Sidebar', () => {
     expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
   })
 
+  it('returns the focus to the row of a closed chat', () => {
+    useChatStore.getState().setChats([contactChat, otherChat])
+    useChatStore.getState().openChat(otherChat.chatId)
+    renderWithProviders(<Sidebar />)
+
+    act(() => useChatStore.getState().closeChat())
+
+    expect(screen.getByRole('button', { name: /Другой контакт/ })).toHaveFocus()
+  })
+
   it('shows a hint when there are no chats', () => {
     renderWithProviders(<Sidebar />)
 

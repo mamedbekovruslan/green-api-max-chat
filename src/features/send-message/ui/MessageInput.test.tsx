@@ -71,4 +71,31 @@ describe('MessageInput', () => {
 
     expect(screen.getByText('3600/4000')).toBeInTheDocument()
   })
+
+  it('announces approaching and reaching the length limit', () => {
+    const { textarea } = renderInput()
+
+    fireEvent.change(textarea, { target: { value: 'a'.repeat(3600) } })
+    expect(screen.getByText('Осталось меньше 500 символов')).toBeInTheDocument()
+
+    fireEvent.change(textarea, { target: { value: 'a'.repeat(MAX_MESSAGE_LENGTH) } })
+    expect(screen.getByText('Достигнут лимит: 4000 символов')).toBeInTheDocument()
+  })
+
+  it('focuses the field once it becomes enabled when asked to', () => {
+    const onSend = vi.fn()
+    const { rerender } = render(<MessageInput onSend={onSend} disabled autoFocus />)
+    const textarea = screen.getByRole('textbox', { name: 'Сообщение' })
+    expect(textarea).not.toHaveFocus()
+
+    rerender(<MessageInput onSend={onSend} autoFocus />)
+
+    expect(textarea).toHaveFocus()
+  })
+
+  it('does not take the focus by default', () => {
+    const { textarea } = renderInput()
+
+    expect(textarea).not.toHaveFocus()
+  })
 })

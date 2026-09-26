@@ -28,6 +28,7 @@ export function ChatListItem({
       className={cn(styles.item, active && styles.active)}
       aria-current={active ? 'true' : undefined}
       aria-busy={loading || undefined}
+      data-chat-id={chat.chatId}
       onClick={() => onSelect(chat.chatId)}
     >
       <Avatar name={chat.name} seed={chat.chatId} src={chat.avatarUrl} size={56} />

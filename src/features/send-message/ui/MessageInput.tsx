@@ -1,7 +1,14 @@
-import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react'
 import { MAX_MESSAGE_LENGTH } from '@/shared/api/green-api'
 import { cn } from '@/shared/lib/cn'
-import { IconButton, SendIcon } from '@/shared/ui'
+import { IconButton, SendIcon, VisuallyHidden } from '@/shared/ui'
 import styles from './MessageInput.module.css'
 
 const COUNTER_THRESHOLD = MAX_MESSAGE_LENGTH - 500
@@ -10,12 +17,23 @@ const MAX_TEXTAREA_HEIGHT = 160
 interface MessageInputProps {
   onSend: (text: string) => void
   disabled?: boolean
+  autoFocus?: boolean
 }
 
-export function MessageInput({ onSend, disabled = false }: MessageInputProps) {
+function limitAnnouncement(length: number): string {
+  if (length >= MAX_MESSAGE_LENGTH) return `Достигнут лимит: ${MAX_MESSAGE_LENGTH} символов`
+  if (length >= COUNTER_THRESHOLD) return 'Осталось меньше 500 символов'
+  return ''
+}
+
+export function MessageInput({ onSend, disabled = false, autoFocus = false }: MessageInputProps) {
   const [text, setText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const canSend = !disabled && text.trim() !== ''
+
+  useEffect(() => {
+    if (autoFocus && !disabled) textareaRef.current?.focus()
+  }, [autoFocus, disabled])
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current
@@ -74,6 +92,7 @@ export function MessageInput({ onSend, disabled = false }: MessageInputProps) {
           className={styles.send}
         />
       </div>
+      <VisuallyHidden aria-live="polite">{limitAnnouncement(text.length)}</VisuallyHidden>
     </form>
   )
 }

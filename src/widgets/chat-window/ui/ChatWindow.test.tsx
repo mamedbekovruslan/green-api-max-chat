@@ -1,11 +1,15 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { delay, http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useChatStore } from '@/entities/chat'
 import { useSessionStore } from '@/entities/session'
 import { contactChat } from '@/test/fixtures/chats'
 import { testCredentials } from '@/test/fixtures/credentials'
-import { chatHistoryResponse, historyIncomingText } from '@/test/fixtures/greenApi'
+import {
+  chatHistoryResponse,
+  historyIncomingText,
+  historyOutgoingDelivered,
+} from '@/test/fixtures/greenApi'
 import { greenApiUrl } from '@/test/msw/greenApi'
 import { server } from '@/test/msw/server'
 import { renderWithProviders } from '@/test/renderWithProviders'
@@ -84,6 +88,42 @@ describe('ChatWindow', () => {
 
     await screen.findByRole('log', { name: 'Сообщения' })
     expect(readChatCalls).toBe(0)
+  })
+
+  it('moves the focus to the message field once the history is loaded', async () => {
+    server.use(http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])))
+    openContactChat()
+
+    renderWithProviders(<ChatWindow />)
+
+    const input = screen.getByRole('textbox', { name: 'Сообщение' })
+    await waitFor(() => expect(input).toHaveFocus())
+  })
+
+  it('closes the chat on Escape', async () => {
+    server.use(http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])))
+    openContactChat()
+    const { user } = renderWithProviders(<ChatWindow />)
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Сообщение' })).toHaveFocus())
+
+    await user.keyboard('{Escape}')
+
+    expect(useChatStore.getState().activeChatId).toBeNull()
+  })
+
+  it('tells screen readers who wrote each message', async () => {
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () =>
+        HttpResponse.json([historyIncomingText, historyOutgoingDelivered]),
+      ),
+    )
+    openContactChat()
+
+    renderWithProviders(<ChatWindow />)
+
+    const feed = await screen.findByRole('log', { name: 'Сообщения' })
+    expect(within(feed).getByText('Вы:')).toBeInTheDocument()
+    expect(within(feed).getByText('Имя в контактах:')).toBeInTheDocument()
   })
 
   it('closes the chat with the back button', async () => {

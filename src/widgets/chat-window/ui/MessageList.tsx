@@ -7,10 +7,11 @@ import styles from './MessageList.module.css'
 
 interface MessageListProps {
   chatId: string
+  chatName: string
   onRetry: (message: Message) => void
 }
 
-export function MessageList({ chatId, onRetry }: MessageListProps) {
+export function MessageList({ chatId, chatName, onRetry }: MessageListProps) {
   const { data: messages, error, isPending, isError, refetch, isFetching } = useChatMessages(chatId)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -20,7 +21,11 @@ export function MessageList({ chatId, onRetry }: MessageListProps) {
   }, [messages])
 
   if (isPending) {
-    return <p className={styles.notice}>Загрузка сообщений…</p>
+    return (
+      <p className={styles.notice} role="status">
+        Загрузка сообщений…
+      </p>
+    )
   }
 
   if (isError) {
@@ -35,7 +40,11 @@ export function MessageList({ chatId, onRetry }: MessageListProps) {
   }
 
   if (messages.length === 0) {
-    return <p className={styles.notice}>Сообщений пока нет. Напишите первым!</p>
+    return (
+      <p className={styles.notice} role="status">
+        Сообщений пока нет. Напишите первым!
+      </p>
+    )
   }
 
   return (
@@ -48,6 +57,7 @@ export function MessageList({ chatId, onRetry }: MessageListProps) {
             <MessageBubble
               key={item.key}
               message={item.message}
+              author={item.message.direction === 'outgoing' ? 'Вы' : chatName}
               footer={
                 item.message.status === 'failed' && (
                   <p className={styles.failure}>
