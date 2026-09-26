@@ -2,6 +2,7 @@ export { Avatar } from './Avatar/Avatar'
 export { Button } from './Button/Button'
 export { Checkbox } from './Checkbox/Checkbox'
 export { ConfirmDialog } from './ConfirmDialog/ConfirmDialog'
+export { ErrorBoundary } from './ErrorBoundary/ErrorBoundary'
 export { IconButton } from './IconButton/IconButton'
 export {
   AlertIcon,
