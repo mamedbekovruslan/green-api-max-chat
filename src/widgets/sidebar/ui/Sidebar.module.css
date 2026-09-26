@@ -19,6 +19,10 @@
   font-weight: 700;
 }
 
+.reconnecting {
+  color: var(--color-text-secondary);
+}
+
 .search {
   position: relative;
   margin: 4px 16px 8px;

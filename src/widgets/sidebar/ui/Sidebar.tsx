@@ -3,6 +3,8 @@ import { filterChats, useChatStore } from '@/entities/chat'
 import { useSessionStore } from '@/entities/session'
 import { useLogout } from '@/features/auth'
 import { NewChatForm } from '@/features/create-chat'
+import { useConnectionStore } from '@/features/receive-messages'
+import { cn } from '@/shared/lib/cn'
 import { phoneFromWid } from '@/shared/lib/phone'
 import { ConfirmDialog, IconButton, LogoutIcon, PlusIcon, SearchIcon } from '@/shared/ui'
 import { ChatRow } from './ChatRow'
@@ -16,6 +18,7 @@ export function Sidebar() {
   const activeChatId = useChatStore((state) => state.activeChatId)
   const openChat = useChatStore((state) => state.openChat)
   const wid = useSessionStore((state) => state.session?.wid)
+  const isReconnecting = useConnectionStore((state) => state.status === 'reconnecting')
   const logout = useLogout()
 
   const visibleChats = filterChats(chats, query)
@@ -27,7 +30,12 @@ export function Sidebar() {
       ) : (
         <>
           <header className={styles.header}>
-            <h1 className={styles.title}>Чаты</h1>
+            <h1
+              className={cn(styles.title, isReconnecting && styles.reconnecting)}
+              aria-live="polite"
+            >
+              {isReconnecting ? 'Соединение…' : 'Чаты'}
+            </h1>
             <IconButton
               label="Новый чат"
               icon={<PlusIcon />}

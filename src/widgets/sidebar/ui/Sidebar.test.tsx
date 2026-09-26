@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { useChatStore } from '@/entities/chat'
 import { messagesQueryKey, type Message } from '@/entities/message'
 import { useSessionStore } from '@/entities/session'
+import { useConnectionStore } from '@/features/receive-messages'
 import { contactChat, otherChat } from '@/test/fixtures/chats'
 import { testCredentials } from '@/test/fixtures/credentials'
 import { renderWithProviders } from '@/test/renderWithProviders'
@@ -15,6 +16,18 @@ describe('Sidebar', () => {
       remember: false,
     })
     useChatStore.getState().reset()
+    useConnectionStore.getState().reset()
+  })
+
+  it('shows the connection state in the header while reconnecting', () => {
+    renderWithProviders(<Sidebar />)
+    expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
+
+    act(() => useConnectionStore.getState().setStatus('reconnecting'))
+    expect(screen.getByRole('heading', { name: 'Соединение…' })).toBeInTheDocument()
+
+    act(() => useConnectionStore.getState().setStatus('online'))
+    expect(screen.getByRole('heading', { name: 'Чаты' })).toBeInTheDocument()
   })
 
   it('shows a hint when there are no chats', () => {
