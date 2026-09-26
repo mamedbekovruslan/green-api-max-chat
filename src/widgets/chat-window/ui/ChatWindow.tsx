@@ -4,7 +4,7 @@ import { useMarkChatRead } from '@/features/mark-read'
 import { useConnectionStore } from '@/features/receive-messages'
 import { MessageInput, useSendMessage } from '@/features/send-message'
 import { formatPhone } from '@/shared/lib/phone'
-import { Avatar } from '@/shared/ui'
+import { ArrowLeftIcon, Avatar, IconButton } from '@/shared/ui'
 import styles from './ChatWindow.module.css'
 import { MessageList } from './MessageList'
 
@@ -13,10 +13,17 @@ function ActiveChat({ chat }: { chat: Chat }) {
   useMarkChatRead(chat.chatId)
   const { send, retry } = useSendMessage(chat.chatId)
   const quotaExceeded = useConnectionStore((state) => state.quotaExceeded)
+  const closeChat = useChatStore((state) => state.closeChat)
 
   return (
     <section className={styles.window} aria-label={`Чат с ${chat.name}`}>
       <header className={styles.header}>
+        <IconButton
+          label="Назад к чатам"
+          icon={<ArrowLeftIcon />}
+          className={styles.back}
+          onClick={closeChat}
+        />
         <Avatar name={chat.name} seed={chat.chatId} src={chat.avatarUrl} size={40} />
         <div className={styles.headerText}>
           <h2 className={styles.name}>{chat.name}</h2>

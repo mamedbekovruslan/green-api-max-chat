@@ -86,6 +86,17 @@ describe('ChatWindow', () => {
     expect(readChatCalls).toBe(0)
   })
 
+  it('closes the chat with the back button', async () => {
+    server.use(http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])))
+    openContactChat()
+    const { user } = renderWithProviders(<ChatWindow />)
+
+    await user.click(screen.getByRole('button', { name: 'Назад к чатам' }))
+
+    expect(useChatStore.getState().activeChatId).toBeNull()
+    expect(screen.getByText('Выберите чат или создайте новый')).toBeInTheDocument()
+  })
+
   it('shows an empty state for a chat without messages', async () => {
     server.use(http.post(greenApiUrl('getChatHistory'), () => HttpResponse.json([])))
     openContactChat()
