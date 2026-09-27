@@ -3,8 +3,8 @@ import { useChatStore } from '@/entities/chat'
 import { historyToMessages, messagesQueryKey } from '@/entities/message'
 import { isApiError, type GreenApiClient, type HistoryMessage } from '@/shared/api/green-api'
 
-export const HISTORY_RATE_LIMIT_RETRIES = 3
-export const HISTORY_RETRY_DELAY_MS = 1500
+const HISTORY_RATE_LIMIT_RETRIES = 3
+const HISTORY_RETRY_DELAY_MS = 1500
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

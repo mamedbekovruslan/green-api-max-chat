@@ -1,7 +1,5 @@
 export {
   createGreenApiClient,
-  DEFAULT_HISTORY_COUNT,
-  DEFAULT_RECEIVE_TIMEOUT_S,
   MAX_MESSAGE_LENGTH,
   type GreenApiClient,
   type ReceivedNotification,

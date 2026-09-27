@@ -1,5 +1,5 @@
 export { filterChats } from './lib/filterChats'
 export { CHATS_STORAGE_KEY, clearChats, loadChats, saveChats } from './model/persistence'
-export { useChatStore, type ChatPreview } from './model/store'
+export { useChatStore } from './model/store'
 export { chatSchema, type Chat } from './model/types'
 export { ChatListItem } from './ui/ChatListItem'
