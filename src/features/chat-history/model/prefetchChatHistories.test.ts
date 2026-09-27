@@ -77,7 +77,7 @@ describe('prefetchChatHistories', () => {
 
     expect(events).toEqual([
       `request ${contactChat.chatId}`,
-      'pause 1000',
+      'pause 1200',
       `request ${otherChat.chatId}`,
     ])
   })
@@ -107,7 +107,7 @@ describe('prefetchChatHistories', () => {
       http.post(greenApiUrl('getChatHistory'), async ({ request }) => {
         const { chatId } = (await request.json()) as { chatId: string }
         return chatId === contactChat.chatId
-          ? new HttpResponse(null, { status: 429 })
+          ? new HttpResponse(null, { status: 500 })
           : HttpResponse.json([historyOutgoingDelivered])
       }),
     )
@@ -117,6 +117,27 @@ describe('prefetchChatHistories', () => {
     expect(cached(queryClient, contactChat.chatId)).toBeUndefined()
     expect(cached(queryClient, otherChat.chatId)).toHaveLength(1)
     expect(useHistoryQueueStore.getState().queued).toEqual([])
+  })
+
+  it('retries after 429 and keeps the chat in the queue meanwhile', async () => {
+    let attempts = 0
+    const queuedDuringRetry: boolean[] = []
+    const { options, queryClient } = setup({ chatIds: [contactChat.chatId] })
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () => {
+        attempts += 1
+        queuedDuringRetry.push(useHistoryQueueStore.getState().queued.includes(contactChat.chatId))
+        return attempts === 1
+          ? new HttpResponse(null, { status: 429 })
+          : HttpResponse.json([historyOutgoingDelivered])
+      }),
+    )
+
+    await prefetchChatHistories(options)
+
+    expect(attempts).toBe(2)
+    expect(queuedDuringRetry).toEqual([true, true])
+    expect(cached(queryClient, contactChat.chatId)).toHaveLength(1)
   })
 
   it('stops when aborted', async () => {

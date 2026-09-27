@@ -4,7 +4,7 @@ import { sleep, type Sleep } from '@/shared/lib/async'
 import { chatMessagesQuery } from './chatMessagesQuery'
 import { useHistoryQueueStore } from './historyQueueStore'
 
-export const HISTORY_PREFETCH_PAUSE_MS = 1000
+export const HISTORY_PREFETCH_PAUSE_MS = 1200
 
 export interface PrefetchChatHistoriesOptions {
   queryClient: QueryClient

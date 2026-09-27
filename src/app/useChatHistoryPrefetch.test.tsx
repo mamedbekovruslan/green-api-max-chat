@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { StrictMode } from 'react'
@@ -54,5 +54,29 @@ describe('restoring chats after a reload', () => {
     await expect.poll(() => readChats).toEqual([{ chatId: contactChat.chatId }])
     expect(within(list).queryByRole('button', { name: /Непрочитанных/ })).not.toBeInTheDocument()
     expect(historyRequests).toBe(1)
+  })
+
+  it('retries the history after 429 and still shows the preview', async () => {
+    let historyRequests = 0
+    server.use(
+      http.post(greenApiUrl('getChatHistory'), () => {
+        historyRequests += 1
+        return historyRequests === 1
+          ? new HttpResponse(null, { status: 429 })
+          : HttpResponse.json([{ ...historyIncomingText, textMessage: 'Ответ после 429' }])
+      }),
+    )
+    saveChats('session', testCredentials.idInstance, [contactChat])
+    useSessionStore.getState().login({ credentials: testCredentials }, { remember: false })
+
+    render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+
+    const item = screen.getByRole('button', { name: /Имя в контактах/ })
+    await waitFor(() => expect(item).toHaveTextContent('Ответ после 429'), { timeout: 4000 })
+    expect(historyRequests).toBe(2)
   })
 })
