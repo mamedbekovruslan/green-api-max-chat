@@ -1,4 +1,6 @@
 .scroll {
+  /* Скрытые подписи VisuallyHidden позиционируются внутри ленты, иначе растягивают страницу */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
