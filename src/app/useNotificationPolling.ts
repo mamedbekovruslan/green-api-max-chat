@@ -4,7 +4,7 @@ import { useSessionStore } from '@/entities/session'
 import { useLogout } from '@/features/auth'
 import {
   applyNotification,
-  NotificationPoller,
+  startNotificationPolling,
   useConnectionStore,
 } from '@/features/receive-messages'
 import { createGreenApiClient } from '@/shared/api/green-api'
@@ -30,14 +30,11 @@ export function useNotificationPolling(): void {
       seenMessageIds: new Set<string>(),
       onQuotaExceeded: connection.setQuotaExceeded,
     }
-    const poller = new NotificationPoller({
+    return startNotificationPolling({
       client: createGreenApiClient(credentials),
       onNotification: (notification) => applyNotification(notification, context),
       onUnauthorized: () => logoutRef.current(),
       onStatusChange: connection.setStatus,
     })
-
-    poller.start()
-    return () => poller.stop()
   }, [credentials, queryClient])
 }

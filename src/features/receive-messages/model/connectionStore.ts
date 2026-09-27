@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ConnectionStatus } from './NotificationPoller'
+import type { ConnectionStatus } from './notificationPolling'
 
 interface ConnectionState {
   status: ConnectionStatus

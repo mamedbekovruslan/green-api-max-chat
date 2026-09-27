@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ApiError, type Notification, type ReceivedNotification } from '@/shared/api/green-api'
-import { NotificationPoller, type NotificationPollerOptions } from './NotificationPoller'
+import { startNotificationPolling, type NotificationPollingOptions } from './notificationPolling'
 
 type Step = ReceivedNotification | null | Error
 
@@ -16,7 +16,7 @@ function waitForAbort(signal: AbortSignal | undefined): Promise<never> {
   })
 }
 
-function createHarness(steps: Step[], options: Partial<NotificationPollerOptions> = {}) {
+function createHarness(steps: Step[], options: Partial<NotificationPollingOptions> = {}) {
   const log: string[] = []
   const sleeps: number[] = []
   let active = 0
@@ -55,19 +55,20 @@ function createHarness(steps: Step[], options: Partial<NotificationPollerOptions
   const onUnauthorized = vi.fn()
   const onStatusChange = vi.fn()
 
-  const poller = new NotificationPoller({
-    client,
-    onNotification,
-    onUnauthorized,
-    onStatusChange,
-    sleep: async (ms) => {
-      sleeps.push(ms)
-    },
-    ...options,
-  })
+  const start = () =>
+    startNotificationPolling({
+      client,
+      onNotification,
+      onUnauthorized,
+      onStatusChange,
+      sleep: async (ms) => {
+        sleeps.push(ms)
+      },
+      ...options,
+    })
 
   return {
-    poller,
+    start,
     client,
     log,
     sleeps,
@@ -79,13 +80,13 @@ function createHarness(steps: Step[], options: Partial<NotificationPollerOptions
   }
 }
 
-describe('NotificationPoller', () => {
+describe('startNotificationPolling', () => {
   it('handles notifications in order and deletes each one after handling', async () => {
     const harness = createHarness([received(1), null, received(2)])
 
-    harness.poller.start()
+    const stop = harness.start()
     await harness.exhausted
-    harness.poller.stop()
+    stop()
 
     expect(harness.log).toEqual([
       'receive',
@@ -108,21 +109,20 @@ describe('NotificationPoller', () => {
       onHandlerError,
     })
 
-    harness.poller.start()
+    const stop = harness.start()
     await harness.exhausted
-    harness.poller.stop()
+    stop()
 
     expect(onHandlerError).toHaveBeenCalledOnce()
     expect(harness.client.deleteNotification).toHaveBeenCalledWith(1, expect.anything())
   })
 
-  it('never runs two requests at the same time, even if started twice', async () => {
+  it('never runs two requests at the same time', async () => {
     const harness = createHarness([received(1), received(2), null])
 
-    harness.poller.start()
-    harness.poller.start()
+    const stop = harness.start()
     await harness.exhausted
-    harness.poller.stop()
+    stop()
 
     expect(harness.maxActive()).toBe(1)
   })
@@ -134,9 +134,9 @@ describe('NotificationPoller', () => {
       maxBackoffMs: 5000,
     })
 
-    harness.poller.start()
+    const stop = harness.start()
     await harness.exhausted
-    harness.poller.stop()
+    stop()
 
     expect(harness.sleeps).toEqual([1000, 2000, 4000, 5000, 1000])
   })
@@ -144,9 +144,9 @@ describe('NotificationPoller', () => {
   it('reports connection status changes', async () => {
     const harness = createHarness([new ApiError('network'), null])
 
-    harness.poller.start()
+    const stop = harness.start()
     await harness.exhausted
-    harness.poller.stop()
+    stop()
 
     expect(harness.onStatusChange.mock.calls).toEqual([['reconnecting'], ['online']])
   })
@@ -154,10 +154,10 @@ describe('NotificationPoller', () => {
   it('stops and reports when the token is rejected', async () => {
     const harness = createHarness([new ApiError('unauthorized', { status: 401 }), received(1)])
 
-    harness.poller.start()
+    harness.start()
     await vi.waitFor(() => expect(harness.onUnauthorized).toHaveBeenCalledOnce())
+    await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(harness.poller.isRunning).toBe(false)
     expect(harness.client.receiveNotification).toHaveBeenCalledOnce()
     expect(harness.onNotification).not.toHaveBeenCalled()
   })
@@ -165,12 +165,13 @@ describe('NotificationPoller', () => {
   it('stop() aborts the pending request and ends the loop', async () => {
     const harness = createHarness([])
 
-    harness.poller.start()
+    const stop = harness.start()
     await harness.exhausted
-    harness.poller.stop()
-    await Promise.resolve()
+    stop()
+    await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(harness.poller.isRunning).toBe(false)
+    const [request] = harness.client.receiveNotification.mock.calls[0] ?? []
+    expect(request?.signal?.aborted).toBe(true)
     expect(harness.client.receiveNotification).toHaveBeenCalledOnce()
     expect(harness.sleeps).toEqual([])
   })

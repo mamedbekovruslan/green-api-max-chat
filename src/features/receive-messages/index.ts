@@ -5,7 +5,7 @@ export {
 } from './model/applyNotification'
 export { useConnectionStore } from './model/connectionStore'
 export {
-  NotificationPoller,
+  startNotificationPolling,
   type ConnectionStatus,
-  type NotificationPollerOptions,
-} from './model/NotificationPoller'
+  type NotificationPollingOptions,
+} from './model/notificationPolling'
